@@ -100,7 +100,97 @@
 \newpage
 \section{Protocolos desarrollados}
 
-\subsection{Protocolo para acceder al monitoreo del proxy}
+\subsection{Introducci\'on}
+
+A continuación se presentar las especificaciones para dar un breve entendimiento 
+de los protocolos para acceder al monitoreo del proxy y para acceder a la configuraci\'on del mismo.
+
+\subsubsection{Proposito}
+
+Tanto el protocolo para acceder al monitoreo del proxy como el protocolo para acceder a la 
+configuración de este son protocolos que funcionan a nivel aplicación para sistemas de informaci\'on.
+
+El protocolo para configurar al proxy pretende enviar los datos crudos para lograr su objetivo. En cambio, 
+el protocolo para el monitero requiere un nivel de autenticaci\'on para luego recibir la informaci\'on 
+deseada. 
+
+Ninguno de los dos protocolos posee configuración extendida dando uso especifico tanto para el monitoreo 
+como para la configuración particular de un proxy.
+
+\subsubsection{Requerimientos}
+
+Las palabras DEBE, NO DEBE,REQUERIDO, HARA, NO HARA, DEBERIA, NO DEBERIA, 
+RECOMENDADO, PUEDE y OPCIONAL se deben interpretar tal y como describe el 
+RFC2119 (http://www.rfc-es.org/rfc/rfc2119-es.txt).
+
+\subsubsection{Terminolog\'ia}
+
+A continuación se incluye un listado con terminolog\'ia relevante que se usara en la 
+especificaci\'on de los protocolos.
+
+\subsubsubsection{Recurso}
+
+Objeto o servicio de la red que puede ser identificado por una URI
+
+\subsubsubsection{Cliente}
+
+Un programa que establece la conexi\'on con el objetico de enviar pedidos.
+
+\subsubsubsection{User Agent}
+
+El cliente que inicializa un pedido. Estos suelen ser navegadores, editores u otro 
+tipo de herramientas usadas por un usuario.
+
+\subsubsubsection{Servidor}
+
+Una aplicaci\'on que acepta conexiones para proveer respuestas y servicios en base 
+a pedidos. Un programa puede ser tanto como cliente como servidor, estos terminos 
+hacen \'unicamente referencia al rol que el programa esta ocupando.
+
+\subsubsubsection{Servidor de origen}
+
+El servidor en donde un recurso en particular reside o va a ser creado.
+
+\subsubsubsection{Proxy}
+
+Un proxy es un programa intermediario que actua tanto como cliente como servidor 
+con el objetivo de hacer pedidos de parte de otros clientes. Los pedidos son procesados internamente 
+o pasandolos, posiblemente habiendo hecho ciertos cambios, a otros servidores. Un 
+"proxy transparente" es un proxy que no modifica ni el pedido ni la respuesta exceptuando autenticaci\'on e 
+identificaci\'on. Un "proxy no transparente" es un proxy que modifica el pedido o la respuesta con el 
+objetivo de agregarle cierto servicio al user agent.
+
+Para el objetivo de los protocolos implementados el concepto de proxy es escencial dado que la aplicaci\'on 
+a implementarse (y que usara dichos protocolos) es un proxy.
+
+% Otros terminos pueden ser incluidos en esta sección!!!
+
+\newpage
+\subsection{Protocolos}
+\subsubsection{Protocolo para acceder al monitoreo del proxy}
+
+\subsubsubsection{Funcionamiento general}
+
+Este protocolo es un protocolo de pedido y respuesta con el objetivo de obtener informaci\'on 
+de monitero del proxy. Para poder realizar la comunicaci\'on correctamente se env\'ian datos 
+de autenticaci\'on en el pedido del cliente. Para que el servidor realmente devuelva la 
+informaci\'on correcta, es importante que la autenticaci\'on sea correcta. El formato y la 
+informaci\'on enviada tanto en el pedido como en la respuesta ser\'an aclarados en secciones 
+posteriores.
+
+Es necesario precisar que toda conexi\'on dada por este protocolo es iniciada por un user 
+agent y en este caso un proxy funciona de servidor para proveer a un usuario datos 
+posiblemente relevantes del mismo.
+
+Para poder utilizar este protocolo se reservar\'a un puerto especifico que debe ser conocido 
+por el cliente para poder establecer la conexi\'on. No es exclusivo, pero se asume que este 
+protocolo es montado sobre TCP/IP, corroborando as\'i integridad y seguridad en la transferencia 
+de los datos.
+
+Por \'ultimo es util resaltar que en cada pedido de este protocolo se esta generando una nueva 
+conexi\'on.
+%Hasta este punto realmente llega la subsubsubsección anterior
+%ALVAMASTER CUCHAME, NO HAY QUE PONERLE NINGUN TIPO DE HEADER ACLARANDO QUE PROTOCOLO ES?!?!?!
 
 Puerto X reservado para acceder al monitoreo del proxy.
 
@@ -128,7 +218,31 @@ Connections-open: cantidad de conexiones abiertas (clientes y origin server)
 401 UNAUTHORIZED
 
 \newpage
-\subsection{Protocolo para acceder a la configuración del proxy}
+\subsubsection{Protocolo para acceder a la configuración del proxy}
+
+\subsubsubsection{Funcionamiento general}
+
+Este protocolo es un protocolo de pedido y respuesta con el objetivo modificar la 
+configuraci\'on actual del proxy. Si bien es un protocolo de pedido y respuesta, la 
+respuesta no provee informaci\'on particularmente relevante sino que simplemente es 
+una confirmaci\'on del resultado de la operaci\'on. 
+
+El formato y la informaci\'on enviada tanto en el pedido como en la respuesta ser\'an 
+aclarados en secciones posteriores.
+
+Es necesario precisar que toda conexi\'on dada por este protocolo es iniciada por un user 
+agent y en este caso un proxy funciona de servidor, modificando su configuraci\'on y retornando 
+un c\'odigo de respuesta.
+
+Para poder utilizar este protocolo se reservar\'a un puerto especifico que debe ser conocido 
+por el cliente para poder establecer la conexi\'on. No es exclusivo, pero se asume que este 
+protocolo es montado sobre TCP/IP, corroborando as\'i integridad y seguridad en la transferencia 
+de los datos.
+
+Por \'ultimo es util resaltar que en cada pedido de este protocolo se esta generando una nueva 
+conexi\'on.
+%Hasta este punto realmente llega la subsubsubsección anterior
+%ALVAMASTER CUCHAME, NO HAY QUE PONERLE NINGUN TIPO DE HEADER ACLARANDO QUE PROTOCOLO ES?!?!?!
 
 Puerto Y reservado para acceder a la configutaci\'on del proxy.
 
