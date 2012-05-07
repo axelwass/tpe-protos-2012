@@ -3,4 +3,21 @@
 .settings
 *~
 .*.swp
+
+# Ignore latex generated files
 *.backup
+*.aux
+*.toc
+*.pdf
+*.log
+
+
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Ignore maven generated files
+target
