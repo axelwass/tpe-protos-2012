@@ -21,6 +21,8 @@
 \usepackage{times}
 
 \begin{document}
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{5}
 
 \renewcommand{\lstlistingname}{C\'odigo Fuente}
 \lstloadlanguages{Octave} 
@@ -58,7 +60,7 @@
         \vfill
         \thispagestyle{empty}
         \begin{center}
-                \includegraphics{./images/itba.jpg}
+                \includegraphics{./images/itba_logo.png}
                 \vfill
                 \Huge{Trabajo Pr\'actico Especial - Pre-entrega}\\
                 \vspace{1cm}
@@ -83,7 +85,9 @@
 
 \tableofcontents
 
+\newpage
 \section{RFCs relevantes para el desarrollo de este trabajo pr\'actico}
+
 \begin{itemize}
  \item rfc2616 --- http 1.1
  \item rfc2119 --- keywords to indicate requirement levels
@@ -100,6 +104,136 @@
 \newpage
 \section{Protocolos desarrollados}
 
+    \subsection{Convenciones de notaci\'on y gram\'atica}
+
+        \subsubsection{BNF aumentada}
+
+        Todos los mecanismos especificados en este documento son descriptos tanto en prosa como en Backus-Naur Form (BNF) aumentada, similar a la usada por el RFC 822.
+        \label{RFC 822}
+        Los implementadores deber\'an estar familiarizados con esta notaci\'on para enteder esta especificaci\'on. La BNF aumentada incluye las siguientes estructuras:
+
+        \begin{itemize}
+            \item nombre = definici\'on\\
+                El nombre de una regla es simplemente el nombre por s\'i mismo (sin estar contenidos por "<" y ">") y está separada de su definici\'on por el caracter igual "=".
+                El espacio en blanco es solo significante en que la indentaci\'on de l\'ineas continuadas es usada para indicar una definici\'on de una regla que abarca m\'as 
+                de una l\'inea. Algunas reglas b\'asicas estas en may\'usculas como SP, LWS, HT, CRLF, DIGIT, ALPHA, etc. Los s\'imbolos "<" y ">" son usados en las definiciones en los casos
+                en que su presencia facilite el entendimiento del uso de los nombres de regla.
+            \item "literal" \\
+                Las comillas doblas rodean texto literal. A menos que expl\'icitamente se exprese lo contrario, dicho texto es \textit{case-insensitive}
+            \item regla1 | regla2\\
+                Los elementos separados por una barra vertical ("|") son alternativos, por ejemplo "si | no" aceptar\'a si o no.
+            \item (regla1 regla2)\\
+                Los elementos encerrados por par\'entesis son tratados como un solo elemento. Luego $"(elem (foo | bar) elem)"$ permite las secuencias 
+                $"elem\,foo\,elem"$ and $"elem\,bar\,elem"$.
+            \item *regla\\
+                El caracter "*" precediendo a un elemento indica repetici\'on. La forma completa es  "<n>*<m>elemento" indicando que puede haber al menos <n> y como mucho <m>
+                ocurrencias del elemento. Los valores \textit{default} son $0$ e infinito, asique "*(elemento)" permite cualquier n\'umero, incluyendo cero; "1*elemento" 
+                requiere al menos uno; y "1*2element" permite uno o dos.
+            \item \verb+[+ regla \verb+]+\\
+                Los corchetes encierran elementos opcionales; "[foo bar]" es equivalente a "*1(foo bar)".
+            \item N regla\\
+                Repetici\'on espec\'ifica: "<n>(elemento)" es equivalente a "<n>*<n>(elemento)";esto es, exactamente <n> ocurrencias de (element). Luego, 2DIGIT es un n\'umero 
+                de 2 cifras, y 3ALPHA es una cadena de 3 caracteres alfab\'eticos.
+            \item \#regla\\
+                Se utiliza para definir listas de elementos. La forma completa es "<n>\#<m>elemento" indicando por lo menos <n> y como mucho <m> elementos, cada uno
+                separado por una o m\'as comas (",") y OPCIONALMENTE espacio linear en blanco, \textit{linear white space}, (LWS). Esto hace que la forma normal de usar listas 
+                sea muy sencilla; una regla como\\
+                \[( \text{*}LWS\,elemento\,\text{*}(\,\text{*}LWS\,","\,\text{*}LWS\,elemento ))\]
+                puede representarse como\\
+                \[1\#elemento\]
+                Cuando esta estructura sea usada, los elementos nulos, $null$, son permitidos, pero no contribuyen a la cantidad de elementos presentes. Esto es, 
+                $"(elemento), , (elemento) "$  est\'a permitido, pero solo cuenta como 2 elementos. Por lo tanto, cuando al menos uno elemento sea requerido, al menos un elemento
+                no nulo DEBE estar presente. Los valores \textit{default} son $0$ e infinito, asique "\#element" permite cualquier cantidad, incluyen cero; $"1\#elemento"$ requiere
+                al menos uno; y $"1\#2elemento"$ permite uno o dos.
+            \item ; comentario\\
+                Un punto y coma, puesto a alguna distancia a la derecha de una regla de texto, empieza un comentario que continua hasta el final de l\'inea. Esta es una forma muy
+                simple de incluir notas \'utiles en media de las especificaciones.
+            \item *LWS implicado\\
+                La gram\'atica descripta por esta especificaci\'on es basada en palabras. Excepto cuando se exprese lo contrario, el espacio linear en blanco (LWS) puede ser 
+                incluido entre dos palabras adyacentes, y entre palabras y separadores adyacentes, sin cambiar la interpretaci\'on del campo. Al menos un delimitador 
+                (LWS y/o separadores) DEBE existir entre dos \textit{tokens} cualesquiera, (para la definici\'on de "token" que sigue), dado que sino ser\'ian interpretados 
+                como un solo \textit{token}.        
+        \end{itemize}
+
+        \subsubsection{Reglas b\'asicas}
+
+        Las siguientes reglas son usadas a lo largo de esta especificaci\'on para describir estructuras b\'asicas de an\'alisis sint\'actico.
+        El set de caracteres US-ASCII est\'a definido por ANSI X3.4-1986.
+        
+        \begin{eqnarray*} 
+            OCTET          & = & <cualquier\,secuencia\,de\,datos\,de\,8\,bits> \nonumber\\
+            CHAR           & = & <cualquier\,caracter\,US-ASCII\,(octetos\,0\,-\,127)> \nonumber\\
+            UPALPHA        & = & <cualquier\,letra\,may\'uscula\,US-ASCII\,"A".."Z"> \nonumber\\
+            LOALPHA        & = & <cualquier\,letra\,min\'uscula\,US-ASCII"a".."z">  \nonumber\\
+            ALPHA          & = & UPALPHA\,|\,LOALPHA  \nonumber\\
+            DIGIT          & = & <cualquier\,d\'igito\,US-ASCII\,"0".."9">  \nonumber\\
+            CTL            & = & <cualquier\,caracter\,de\,control\,US-ASCII\,(octetos\,0\,-\,31)\,y\,DEL\,(127)>  \nonumber\\
+            CR             & = & <retorno\,de\,carro,US-ASCII\,CR,\,(13)>  \nonumber\\
+            LF             & = & <salto\,de\,l\'inea,US-ASCII\,LF,\,(10)>  \nonumber\\
+            SP             & = & <espacio,US-ASCII\,SP,\,(32)>  \nonumber\\
+            HT             & = & <tab\,horizontal,US-ASCII\,HT,\,(9)>  \nonumber\\
+            <">            & = & <comillas\,dobles,US-ASCII,\,(34)>  \nonumber\\
+        \end{eqnarray*}
+
+        Nuestra especificaci\'on define la secuencia CR LF como el marcador de fin de l\'inea para todos los elementos del protocolo. 
+
+        \begin{eqnarray*}
+            CRLF         &  =  & CR LF \nonumber\\
+        \end{eqnarray*}
+
+        Todo espacio linear en blanco (LWS) tiene la misma sem\'antica que SP. Un recipiente PUEDE reemplazar cualquier LWS por un solo SP antes de interpretar el valor del 
+        campo o pasar el mensaje
+
+        \begin{eqnarray*}
+                LWS          & = & [CRLF] 1\text{*}( SP | HT ) \nonumber\\
+        \end{eqnarray*}
+
+        La regla TEXT se usa solamente para contenidos descriptivos de un campo y valores que no se supone que sean interpretados por el \textit{parser} del mensaje.
+        Palabras de  *TEXT PUEDEN contener caracteres de otros sets de caracteres aparte del ISO- 8859-1, solo cuando sean encodeados de acuerdo a las reglas del 
+        RFC 2047 \label{RFC 2047}
+
+        \begin{eqnarray*}
+                TEXT         & = & <cualquier\,OCTET\,excepto\,CTLs,\nonumber\\
+                            &   & pero\,incluyendo\,LWS>\nonumber\\
+        \end{eqnarray*}
+
+        Los caracteres num\'ericos hexadecimal son usados en varios elementos del protocolo.
+
+        \begin{eqnarray*}
+                HEX           & = &   ``A"\,|\,``B"\,|\,``C"\,|\,``D"\,|\,``E"\,|\,``F"\nonumber\\
+                            &   & \,|\,``a"\,|\,``b"\,|\,``c"\,|\,``d"\,|\,``e"\,|\,``f"\,|\,DIGIT\nonumber\\
+        \end{eqnarray*}
+
+
+        Muchos valores de campos consisten en palabras separadas por un LWS o caracteres especiales. Estos caracteres especiales DEBEN estar entre commillas dobles 
+        para ser usados dentro de un valor de un par\'ametro.
+
+        \begin{eqnarray*}
+            token         & = & 1\text{*}<cualquier\,CHAR\,excepto\,CTLs\,o\,separadores>\nonumber\\
+            separadores    & = & ``("\,\,|\,\,``)"\,\,|\,\,``<"\,\,|\,\,``>"\,\,|\,\,``@"\nonumber\\
+                &   &\,\,|\,\,``,"\,\,|\,\,``;"\,\,|\,\,``:"\,\,|\,\,``\backslash"\,\,|\,\,<"\,''\,``>\nonumber\\
+                &   &\,\,|\,\,``/"\,\,|\,\,``["\,\,|\,\,``]"\,\,|\,\,``?"\,\,|\,\,``="\nonumber\\
+                &   &\,\,|\,\,``\verb+{+"\,\,|\,\,``\verb+}+"\,\,|\,\,SP\,\,|\,\,HT\nonumber\\
+        \end{eqnarray*}
+
+
+        Se puede incluir comentarios en algunos campos rodeando el texto de comentario con par\'entesis. Los comentarios son permitidos solamente en aquellos campos 
+        que contengan "comentario" como parte de su definici\'on de valor de campo. En todos los otros casos, los par\'entesis son considerados como parte del valor del campo.
+        \begin{eqnarray*}
+            comentario       & = & "("\,\,\text{*}(\,ctext\,\,|\,\,|\,\,comentario,)\,\,")"\nonumber\\
+            ctext         & = & <cualquier\,\,TEXT\,\,excluyendo\,\,``("\,\,y\,\,``)">\nonumber\\
+        \end{eqnarray*}
+
+
+
+        Una cadena de texto es analizada como una sola palabra se esta rodeada de comillas dobles.
+
+        \begin{eqnarray*}
+            quoted-string & = & (\,\,<">\,\,\text{*}(qdtext\,\,|\,\,)\,\,<">\,\,)\nonumber\\
+            qdtext        & = & <cualquier\,\,TEXT\,\,excepto\,\,<">>\nonumber\\
+        \end{eqnarray*}
+
+\newpage
 \subsection{Protocolo para acceder al monitoreo del proxy}
 
 Puerto X reservado para acceder al monitoreo del proxy.
@@ -128,30 +262,89 @@ Connections-open: cantidad de conexiones abiertas (clientes y origin server)
 401 UNAUTHORIZED
 
 \newpage
-\subsection{Protocolo para acceder a la configuración del proxy}
+    \subsection{Protocolo para acceder a la configuración del proxy}
 
-Puerto Y reservado para acceder a la configutaci\'on del proxy.
+    Puerto Y reservado para acceder a la configutaci\'on del proxy.
 
-config-filter 1 [block | unblock]
-config-filter 2 [block | unblock] [ip-adress or mask]
-config-filter 3 [block | unblock] url-regexp
-config-filter 4 [block | unblock] media-type
-config-filter 5 [block | unblock] size-in-bytes
-config-filter 6 [enable | disable]
-config-filter 7 [enable | disable]
+        \subsubsection{Parametros de los protocolos}
 
 
-200 OK
+        \subsubsection{Mensaje del protocolo}
 
-400 BAD REQUEST
+            \paragraph*{Tipos de mensaje}
+            Los mensajes del protocolo consisten de solicitudes por parte del cliente y respuestas por parte del servidor proxy.
 
-500 INTERNAL ERROR
+            \begin{eqnarray*}
+                mensaje  & = &\,\,Solicitud\,\,|\,\,Respuesta\nonumber\\
+            \end{eqnarray*}
 
+
+        \subsubsection{Solictud}
+        Una solicitud del cliente al servidor proxy incluye el identificador del filtro o transformador, la operaci\'on deseada y uno o m\'as par\'ametros opcionales.
+
+%         config-filter n (operaci\'on) [parametros]
+        \begin{eqnarray*}
+                Solicitud\ & = & \verb+"config-filter"+\,\,SP\,\,id-filtro\,\,SP\,\,operacion\,\,SP\,\,\verb+[+parametros\verb+]+\,\,CRLF\nonumber\\
+        \end{eqnarray*}
+
+            \paragraph*{Identificadores de filtros}
+            Los identificadores de los filtros son simplemente n\'umeros decimales. Hasta el momento hay 7 filtros, en caso de agregarse uno nuevo se deber\'a 
+            asignar el n\'umero correspondiente como su identificador.
+
+            \begin{eqnarray*}
+                id-filtro & = & 1\,\,|\,\,2\,\,|\,\,3\,\,|\,\,4\,\,|\,\,5\,\,|\,\,6\,\,|\,\,7\nonumber\\
+            \end{eqnarray*}
+            
+            \paragraph*{Operaci\'on}
+            La operaci\'on a realizar indica la habilitaci\'on, o no, del filtro. Por lo que solo hay dos operaciones posibles, habilitar o deshabilitar.
+
+            \begin{eqnarray*}
+                operacion & = & (\verb+"enable"+\,\,|\,\,\verb+"disable"+)\nonumber\\
+            \end{eqnarray*}
+            
+            \paragraph*{Par\'metros}
+            Algunos m\'etodos requieren de uno o m\'as par\'ametro. Dada que estos varian de manera significante de acuerdo al m\'etodo, se los discutir\'a 
+            posteriormente.
+        
+        \subsubsection{Respuesta}
+
+        200 OK
+
+        400 BAD REQUEST
+
+        500 INTERNAL ERROR
+
+
+        \subsubsection{M\'etodos}
+        
+            \paragraph*{Filtro Nº1}
+
+            Este m\'etodo no requiere par\'ametros.
+%             config-filter 1 (enable | disable)
+
+            \paragraph*{Filtro Nº2}
+             config-filter 2 (enable | disable) [ip-adress or mask]
+
+            \paragraph*{Filtro Nº3}
+            config-filter 3 (enable | disable) url-regexp
+
+            \paragraph*{Filtro Nº4}
+            config-filter 4 (enable | disable) media-type
+
+            \paragraph*{Filtro Nº5}
+            config-filter 5 (enable | disable) size-in-bytes
+
+            \paragraph*{Filtro Nº6}
+            config-filter 6 (enable | disable)
+
+            \paragraph*{Filtro Nº7}
+            config-filter 7 (enable | disable)
 \newpage
 \section{Problemas y dificultades encontrados}
 
-concurrencia
-selector 1 thread  varios thread --> sincronizacion hiper heavy!
+selector 1 thread  o varios thread --> sincronizacion hiper heavy!
+
+mantener estado interno de cada conexion
 
 \newpage
 \section{Casos de prueba}
