@@ -327,30 +327,60 @@
         %Hasta este punto realmente llega la subsubsubsección anterior
         %ALVAMASTER CUCHAME, NO HAY QUE PONERLE NINGUN TIPO DE HEADER ACLARANDO QUE PROTOCOLO ES?!?!?!
 
-        Puerto X reservado para acceder al monitoreo del proxy.
+        \subsubsection{Parametros del Protocolo}
 
-        User: username.
-        Pass: password.
+        \subsubsection{Mensaje del Protocolo}
+            Los mensajes del protocolo consisten de solicitudes por parte del cliente y respuestas por parte del servidor proxy.
 
-        En caso de autenticarse correctamente, el usuario podr\'a acceder a la información de monitoreo.
+            \begin{eqnarray*}
+                mensaje  & = &\,\,Solicitud\,\,|\,\,Respuesta\nonumber\\
+            \end{eqnarray*}
 
-        Bytes-transferred: cantidad total de bytes transferidos.
-        Bytes-transferred-clients: bytes transferidos entre clientes y el proxy.
-        Bytes-transferred-servers: bytes transferidos entre el proxy y los origin servers.
-        Total-filters-applied:
-        All-access:
-        Ip-filter:
-        URL-filter:
-        Media-type-filter:
-        Size-filter:
-        L33t-transformations:
-        Images-transformations:
-        Connections-open: cantidad de conexiones abiertas (clientes y origin server)
+        \subsubsection{Solictud}
+        Una solicitud del cliente al servidor proxy incluye el username y el password del usuario que actual.
+
+        \begin{eqnarray*}
+                Solicitud\ & = & \verb+"monitor"+\,\,SP\,\,User\,\,SP\,\,Password\nonumber\\
+        \end{eqnarray*}
 
 
-        200 OK
+        \paragraph*{User y Password}
+        User, el nombre del usuario, y password, su contraseña deben ser proveidos para iniciar la comunicaci\'on
+        con este protocolo. El servidor autenticara estos datos para permiter o rechazar el monitereo.
+            
+    \subsubsection{Respuesta}
+    
+    Los mensajes de respuesta tienen como contenido en primer lugar el c\'odigo de respuesta y en caso de ser un 
+    pedido aceptado tambi\'en contendra la informaci\'on correspondiente al monitereo.
 
-        401 UNAUTHORIZED
+    \begin{eqnarray*}
+            Respuesta\ & = &\,\,Codigo\,\,SP\,\,\verb+[Datos de monitereo]+\nonumber\\
+    \end{eqnarray*}
+    
+    \paragraph*{C\'odigo de respuesta}
+        El c\'odigo de respuesta indica si la operaci\'on fue realizada con \'exito o no.
+
+        \begin{eqnarray*}
+            Codigo\ & = & \verb+"200 OK"+\,\,|\,\,\verb+"401 UNAUTHORIZED"+\nonumber\\
+        \end{eqnarray*}
+
+    \subsubsubsection{Datos de monitereo}
+
+    El protocolo tiene el potencial de proveer al usuario de ciertos datos del monitoreo del proxy que se 
+    especifican a continuaci\'on
+
+    \paragraph*{Bytes-transferred:} Cantidad total de bytes transferidos.
+    \paragraph*{Bytes-transferred-clients:} Bytes transferidos entre clientes y el proxy.
+    \paragraph*{Bytes-transferred-servers:} Bytes transferidos entre el proxy y los origin servers.
+    \paragraph*{Total-filters-applied:} Cantidad de filtros que fueron aplicados.
+    \paragraph*{All-access:} Cantidad de pedidos.
+    \paragraph*{Ip-filter:} Cantidad de pedidos filtrados por la direcci\'on IP.
+    \paragraph*{URL-filter:} Cantidad de pedidos filtrados por la URL.
+    \paragraph*{Media-type-filter:} Cantidad de pedidos filtrados por el tipo de recurso.
+    \paragraph*{Size-filter:} Cantidad de pedidos filtrados por tamaño.
+    \paragraph*{L33t-transformations:} Cantidad de conversiones a lenguaje L33t.
+    \paragraph*{Images-transformations:} Cantidad de imagenes transformadas.
+    \paragraph*{Connections-open:} Cantidad de conexiones abiertas (clientes y origin server)
 
 \newpage
     \subsection{Protocolo para acceder a la configuración del proxy}
